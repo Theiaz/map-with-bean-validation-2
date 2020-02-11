@@ -36,9 +36,11 @@ class EmployeeController {
 
 
     @PostMapping("/employees")
-    Employee newEmployee(@RequestBody @Valid Employee newEmployee) {
+    List<Employee> newEmployee(@RequestBody @Valid Employee newEmployee) {
 
-        return employeeMap.put(counter++, newEmployee);
+        employeeMap.put(counter++, newEmployee);
+
+        return new ArrayList<>(employeeMap.values());
     }
 
 
