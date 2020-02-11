@@ -1,86 +1,53 @@
 package payroll;
 
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-// tag::hateoas-imports[]
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 // end::hateoas-imports[]
 
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+
 
 @RestController
 class EmployeeController {
 
-	private final EmployeeRepository repository;
+    int counter = 0;
+    Map<Integer, Employee> employeeMap = new HashMap<>();
 
-	EmployeeController(EmployeeRepository repository) {
-		this.repository = repository;
-	}
+    @GetMapping("/employees")
+    Resources<Resource<Employee>> all() {
 
-	// Aggregate root
+        List<Resource<Employee>> employees = employeeMap.values().stream()
+                .map(employee -> new Resource<>(employee))
+                .collect(Collectors.toList());
 
-	// tag::get-aggregate-root[]
-	@GetMapping("/employees")
-	Resources<Resource<Employee>> all() {
+        return new Resources<>(employees);
+    }
 
-		List<Resource<Employee>> employees = repository.findAll().stream()
-			.map(employee -> new Resource<>(employee,
-				linkTo(methodOn(EmployeeController.class).one(employee.getId())).withSelfRel(),
-				linkTo(methodOn(EmployeeController.class).all()).withRel("employees")))
-			.collect(Collectors.toList());
-		
-		return new Resources<>(employees,
-			linkTo(methodOn(EmployeeController.class).all()).withSelfRel());
-	}
-	// end::get-aggregate-root[]
 
-	@PostMapping("/employees")
-	Employee newEmployee(@RequestBody Employee newEmployee) {
-		return repository.save(newEmployee);
-	}
+    @PostMapping("/employees")
+    Employee newEmployee(@RequestBody @Valid Employee newEmployee) {
 
-	// Single item
+        return employeeMap.put(counter++, newEmployee);
+    }
 
-	// tag::get-single-item[]
-	@GetMapping("/employees/{id}")
-	Resource<Employee> one(@PathVariable Long id) {
-		
-		Employee employee = repository.findById(id)
-			.orElseThrow(() -> new EmployeeNotFoundException(id));
-		
-		return new Resource<>(employee,
-			linkTo(methodOn(EmployeeController.class).one(id)).withSelfRel(),
-			linkTo(methodOn(EmployeeController.class).all()).withRel("employees"));
-	}
-	// end::get-single-item[]
 
-	@PutMapping("/employees/{id}")
-	Employee replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) {
-		
-		return repository.findById(id)
-			.map(employee -> {
-				employee.setName(newEmployee.getName());
-				employee.setRole(newEmployee.getRole());
-				return repository.save(employee);
-			})
-			.orElseGet(() -> {
-				newEmployee.setId(id);
-				return repository.save(newEmployee);
-			});
-	}
+    @PostMapping("/employees/bulk")
+    List<Employee> newEmployee(@RequestBody Map<String, @Valid
+            Employee> newEmployees) {
 
-	@DeleteMapping("/employees/{id}")
-	void deleteEmployee(@PathVariable Long id) {
-		repository.deleteById(id);
-	}
+        newEmployees.values().forEach(newEmployee -> employeeMap.put(counter++, newEmployee));
+
+        return new ArrayList<>(employeeMap.values());
+    }
 }
