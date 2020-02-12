@@ -23,6 +23,17 @@ public class Employee {
         this.role = role;
     }
 
+    public String getName() {
+
+        return name;
+    }
+
+
+    public EmployeeRole getRole() {
+
+        return role;
+    }
+
     public static class EmployeeRole {
 
         @NotBlank
@@ -37,6 +48,17 @@ public class Employee {
 
             this.rolename = rolename;
             this.rating = rating;
+        }
+
+        public String getRolename() {
+
+            return rolename;
+        }
+
+
+        public int getRating() {
+
+            return rating;
         }
     }
 }

@@ -4,6 +4,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 // end::hateoas-imports[]
 
+import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 
+@Validated
 @RestController
 class EmployeeController {
 
